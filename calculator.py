@@ -101,16 +101,108 @@ def pinta(valor):
     return valor
 
 class Controlator (ttk.Frame):
+    
+
     def __init__(self,parent): #**kwargs):
         ttk.Frame.__init__(self,parent,width = 272, height=300)
-        d = Display(self)
-        d.grid(column = 0, row=0, columnspan =4)
+        self.reset()
+        
+        self.display = Display(self)
+        self.display.grid(column = 0, row=0, columnspan =4)
 
         for properties in dbuttons:
-            btn = CalcButton(self,properties["text"],d.paint, properties.get("W",1),properties.get("H",1))
-            btn.grid(column = properties["col"], row=properties["row"],columnspan= properties.get("W",1),rowspan=properties.get("H",1))
 
-          
+            '''
+            el primer parametro va al segundo de init de CalcButton(parent), hay que poner el nombre de la instancia y luego el resto de parametros, por ejemplo:
+            root = Tk()
+            btn= CalcButton(root,"un texto",en el comand va la definición de la función, lo demas no hace falta ponerlo porque tiene por defecto)
+             def __init__(self, parent,value,command,width =1,height=1)
+            '''
+
+
+            btn = CalcButton(self,properties["text"],self.set_operation, properties.get("W",1),properties.get("H",1))
+            btn.grid(column = properties["col"], row=properties["row"],columnspan= properties.get("W",1),rowspan=properties.get("H",1))
+    
+    def reset (self):
+        self.op1 = 0
+        self.op2 = 0
+        self.operation = ""
+        self.dispValue = "0" 
+        self.signo_recien_pulsado= False
+        #hace referencia al value = 0 de Display
+    
+    def to_float(self,valor):
+        return float(valor.replace(",","."))
+    def to_str(self, valor):
+        return str(valor).replace('.', ',')#convierto primero el valr en cadena y luego se le aplica el replace
+    
+    def calculate(self):
+        if self.operation == "+":
+            return self.op1 + self.op2
+        elif self.operation == "-":
+            return self.op1 - self.op2
+        elif self.operation == "x":
+            return self.op1 * self.op2
+        elif self.operation == "÷":
+            return self.op1 / self.op2
+        return self.op2
+
+    def set_operation(self,algo):
+        if algo.isdigit():
+            if self.dispValue == "0" or self.signo_recien_pulsado:
+                self.op1 = self.to_float(self.dispValue)
+                self.op2 = 0
+                self.dispValue = algo
+            else:
+             self.dispValue += str(algo)
+
+        if algo == "C":
+            self.reset()
+
+        if algo == "+/-" and self.dispValue != "0":
+            if self.dispValue[0] == "-":
+                self.dispValue = self.dispValue [1:]
+            else:
+                self.dispValue = "-" + self.dispValue
+
+        if algo == "," and "," not in self.dispValue:
+            self.dispValue += str(algo)
+
+        if algo == "+" or algo == "-" or algo == "x" or algo == "÷":
+            if self.op1 == 0:
+                self.op1 = self.to_float(self.dispValue)
+                self.operation = algo
+                #self.dispValue = "0" se puede quitar por el signo recien pulsado, lo teniamos para que despues de pulsar el signo apareciese el 0
+            elif self.op2 == 0:
+                self.op2 = self.to_float(self.dispValue)
+                res = self.calculate()
+                self.dispValue = self.to_str(res)
+                self.operation = algo
+            else:
+                self.op1 = self.to_float(self.dispValue)
+                self.op2 = 0
+                self.operation = algo
+            self.signo_recien_pulsado = True
+        else:
+            self.signo_recien_pulsado= False
+
+                
+            
+        if algo == "=":
+            if self.op1 != 0 and self.op2 == 0:
+                self.op2 = self.to_float(self.dispValue)
+                res = self.calculate()
+                self.dispValue = self.to_str(res) 
+                
+            elif self.op1 != 0 and self.op2 != 0:
+                self.op1 = self.to_float(self.dispValue)
+                res = self.calculate()
+                self.dispValue = self.to_str(res)
+                self.operation = algo
+
+
+
+        self.display.paint(self.dispValue)
 
 
 
@@ -135,26 +227,8 @@ class Display(ttk.Frame):
         '''
 
     def paint(self,algo):
-        if algo.isdigit():
-            if self.value == "0":
-                self.value = algo
-            else:
-             self.value += str(algo)
-        self.lbl.config(text=self.value) 
-
-        if algo == "C":
-            self.value = "0"
-
-        if algo == "+/-" and self.value != "0":
-            if self.value[0] == "-":
-                self.value = self.value [1:]
-            else:
-                self.value = "-" + self.value
-                
-        if algo == "," and "," not in self.value:
-            self.value += str(algo)
-
-        self.lbl.config(text=self.value) 
+        self.value = algo
+        self.lbl.config(text=algo) 
         
         #para ver lo que hace las lbl es lbl.config(), para cambiar el texto por ejemplo. lbl.config(text="3,24")
 class Selector(ttk.Radiobutton):
