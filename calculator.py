@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk #controles especificios que permiten estilos
 
 dbuttons = [
     {
@@ -124,8 +124,8 @@ class Controlator (ttk.Frame):
             btn.grid(column = properties["col"], row=properties["row"],columnspan= properties.get("W",1),rowspan=properties.get("H",1))
     
     def reset (self):
-        self.op1 = 0
-        self.op2 = 0
+        self.op1 = None
+        self.op2 = None
         self.operation = ""
         self.dispValue = "0" 
         self.signo_recien_pulsado= False
@@ -151,7 +151,7 @@ class Controlator (ttk.Frame):
         if algo.isdigit():
             if self.dispValue == "0" or self.signo_recien_pulsado:
                 self.op1 = self.to_float(self.dispValue)
-                self.op2 = 0
+                self.op2 = None
                 self.dispValue = algo
             else:
              self.dispValue += str(algo)
@@ -169,18 +169,18 @@ class Controlator (ttk.Frame):
             self.dispValue += str(algo)
 
         if algo == "+" or algo == "-" or algo == "x" or algo == "÷":
-            if self.op1 == 0:
+            if not self.op1:#esto es igual a if self.op1 == None ( es dcir si esta vacia)
                 self.op1 = self.to_float(self.dispValue)
                 self.operation = algo
                 #self.dispValue = "0" se puede quitar por el signo recien pulsado, lo teniamos para que despues de pulsar el signo apareciese el 0
-            elif self.op2 == 0:
+            elif not self.op2:
                 self.op2 = self.to_float(self.dispValue)
                 res = self.calculate()
                 self.dispValue = self.to_str(res)
                 self.operation = algo
             else:
                 self.op1 = self.to_float(self.dispValue)
-                self.op2 = 0
+                self.op2 = None
                 self.operation = algo
             self.signo_recien_pulsado = True
         else:
@@ -189,12 +189,12 @@ class Controlator (ttk.Frame):
                 
             
         if algo == "=":
-            if self.op1 != 0 and self.op2 == 0:
+            if self.op1 and not self.op2: #if self.op1 != None and self.op2 == None
                 self.op2 = self.to_float(self.dispValue)
                 res = self.calculate()
                 self.dispValue = self.to_str(res) 
                 
-            elif self.op1 != 0 and self.op2 != 0:
+            elif self.op1 and self.op2: #self.op1 != None and self.op2 != None
                 self.op1 = self.to_float(self.dispValue)
                 res = self.calculate()
                 self.dispValue = self.to_str(res)
@@ -231,8 +231,22 @@ class Display(ttk.Frame):
         self.lbl.config(text=algo) 
         
         #para ver lo que hace las lbl es lbl.config(), para cambiar el texto por ejemplo. lbl.config(text="3,24")
-class Selector(ttk.Radiobutton):
-    pass
+class Selector(ttk.Frame):
+    def __init__(self,parent,status="N"):
+        ttk.Frame.__init__(self,parent, width = 68, height = 50)
+        self.status = status
+        self.__value = StringVar() #variable de control, es una manera de recordar a todos los widgets, si necesitamos hacer cambios se lo ahcemos desde el principio(informa a todos los widgets)
+        self.__value.set(self.status)
+
+        radiob1 = ttk.Radiobutton(self, text = "N", value="N", name = "rbtn_normal",variable=self.__value,command = self.__click) #variable es la variable de control
+        radiob1.place(x=0,y=5)
+    
+        radiob2 = ttk.Radiobutton(self, text = "R", value="R", name = "rbtn_romano",variable=self.__value,command = self.__click)
+        radiob2.place(x=0,y=30)
+
+    def __click(self):
+        self.status = self.__value.get()#devuelveme el valor que tiene status
+        
 class CalcButton(ttk.Frame):
     def __init__(self, parent,value,command,width =1,height=1):
         ttk.Frame.__init__(self,parent, width=68*width, height=50*height)
