@@ -9,6 +9,6 @@ class TkTestCase(unittest.TestCase):
 
     @classmethod
 
-    def tearDown(cls):
+    def tearDownClass(cls):
         cls.root.update()
         cls.root.destroy()

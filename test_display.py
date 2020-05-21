@@ -20,9 +20,9 @@ class TestDisplay(tkinterTestCase.TkTestCase):
         
         
     def test_render_OK (self):
-        self.assertEqual(d.winfo_height(),50)
-        self.assertEqual(d.winfo_width(),272)
-        self.assertEqual(selfd.value,"0")
+        self.assertEqual(self.d.winfo_height(),50)
+        self.assertEqual(self.d.winfo_width(),272)
+        self.assertEqual(self.d.value,"0")
 
        
 

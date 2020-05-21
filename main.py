@@ -8,7 +8,7 @@ class MainApp(Tk):
         Tk.__init__(self)
         self.title("Calculadora")
         self.geometry("272x300")
-        self.pack_propagate(False)
+        self.propagate(0)
 
         c = calculator.Controlator(self)
         c.pack(side=TOP,fill=BOTH)
